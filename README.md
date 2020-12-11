@@ -14,12 +14,15 @@ $ touch .env
 ```
 Add the following content and update with the correct informations
 
+```bash
+
 CLIENT_DB_CONNECTION=mysql
 CLIENT_DB_HOST=127.0.0.1
 CLIENT_DB_PORT=3306
 CLIENT_DB_DATABASE=your_db_name
 CLIENT_DB_USERNAME=your_username
 CLIENT_DB_PASSWORD=your_password
+```
 
 ## COMMAND
 
