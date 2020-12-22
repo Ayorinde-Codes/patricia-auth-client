@@ -1,7 +1,5 @@
 'use strict'
 
-const CONFIG= require('./config')
-
 module.exports = {
   
   development: {

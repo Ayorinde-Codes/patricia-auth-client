@@ -1,7 +1,7 @@
 ## Installation Guide
 
 Using npm:
-
+Dependencies
 ```bash
 $ npm install dotenv knex uuid mysql --save
 ```
