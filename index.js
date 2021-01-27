@@ -1,11 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-var generateKey = require('./helper');
-
-const knex = require('knex');
-
-const knexFile = require('./knexfile').development;
-const db = knex(knexFile);
-
+var generateKey = require('./helpers/helper');
+const db = require("./config/db-config");
 
 
 
@@ -19,46 +14,60 @@ try{
 
   let key= generateKey.generateKey();
 
-return await db("auth_clients")
-        .insert(datainfo)
-        .then( res => {
-            db("auth_client_keys")
-                .insert({auth_client_id:res[0], key: key})
-                .then(() => console.log("Client Created"+ "  "  + key))
-                .catch(function () {
-                  return "Client not Created";
-                });
-        }).catch(function () {
-            return "Client Creation failed";
-          }).finally(() =>  db.destroy());
-          
-}
-catch (error) {
-    return  error;
-  }
+  return db.transaction(trx => {
+    
+        return trx('auth_clients')
+          .insert(datainfo)
+          .then((res) => {
+
+            return trx('auth_client_keys').insert({auth_client_id:res[0], key: key});
+          }).catch(err => {
+
+            return err;
+          });
+      })
+      .then((result) => {
+
+        return (JSON.parse(JSON.stringify({'message':'client created', 'key': key, 'uuid' : datainfo.uuid })));
+
+      })
+      .catch(err => {
+
+        return err;
+      });
+
+    }
+
+    catch (error) {
+        return  error;
+      }
 
 };
 
 
 const update_client = (uuid, name) => {
 
-    let id = uuid;
-    let data= name;
+  let data= name;
 
-    try {
+  try {
 
-      db("auth_clients").where("uuid", id)
-      .update({"name": data}).then(function (count) {
-     console.log("client updated");
-    }).finally(function () {
-     db.destroy();
+    return db("auth_clients").where("uuid", uuid)
+    .update({"name": data}).then(()=> {
+
+      return `client updated for ${name}`;
+    })
+    .catch( (err) => {
+      return err;
+      
+    })
+    .finally(() =>{
+    db.destroy();
     });
 
-    } catch (err) {
+  } catch (err) {
 
-      console.log(err);
-      db.destroy()
-    }
+    return (err);
+  }
 };
 
 
@@ -66,98 +75,99 @@ const is_admin= async(uuid) => {
 
   try{
   
-   await db.from('auth_clients')
+   return db.from('auth_clients')
   .leftJoin('auth_client_keys', 'auth_clients.id', '=', 'auth_client_keys.auth_client_id')
   .where({'auth_clients.uuid': uuid})
   .options({nestTables: true})
   .then((results) => {
 
-    if(results[0].auth_clients.type== 'admin'){
-      console.log(true);
+    if(results[0].type== 'admin'){
+      return true;
     }
     else {
-      console.log(false);
+
       return false;
     };
   }).catch( (err) => {
-    console.log(false);
+    return err;
     
   }).finally(() =>  db.destroy());
 
   }
-catch(err)
-{
-  console.log(err);
-}
+  catch(err)
+  {
+    return (err);
+  }
 }
 
-const get_client = async(id) =>{
+const get_client = async(uuid) =>{
   try{
       return  db.from('auth_clients')
       .leftJoin('auth_client_keys', 'auth_clients.id', '=', 'auth_client_keys.auth_client_id')
-      .where({'auth_clients.uuid': id})
+      .where({'auth_clients.uuid': uuid})
       .options({nestTables: true})
       .then(results => {
-        console.log(JSON.parse(JSON.stringify(results)));
+
+        return (JSON.parse(JSON.stringify(results)));
       }).catch( (err) => {
-        console.log(err);
+        return err;
       }).finally(() =>  db.destroy());
     }
   catch(err)
   {
-    console.log("Client Not Found");
+    return "Client Not Found";
   }
 }
 
 
 const get_client_keys = async(id) => {
+  
   try{
-
-    return  db.from('auth_clients')
+    return db.from('auth_clients')
     .leftJoin('auth_client_keys', 'auth_clients.id', '=', 'auth_client_keys.auth_client_id')
-    .options({nestTables: true})
     .where({'auth_client_keys.auth_client_id': id})
+    .options({nestTables: true})
     .then(results => {
-      console.log(JSON.parse(JSON.stringify(results)));
+
+      return (JSON.parse(JSON.stringify(results)));
 
     }).catch( (err) => {
-      console.log(err);
+      return (err);
     }).finally(() =>  db.destroy());
 
     }
   catch(err)
   {
-    console.log("Client Not Found");
+    return ("Client Not Found");
   }
 }
 
-const is_autenticate = async(apikey) => {
+const is_authenticate = async(apikey) => {
 
   try{  
-    await db.from('auth_clients')
+    return await db.from('auth_clients')
    .leftJoin('auth_client_keys', 'auth_clients.id', '=', 'auth_client_keys.auth_client_id')
    .where({'auth_client_keys.key': apikey})
    .options({nestTables: true})
    .then((results) => {
  
-
     if(!(results== '' || null)){
-      console.log(true);
+      return true;
     }
     else {
-      console.log(false);
+      return false;
     }
 
    }).catch( (err) => {
  
-     console.log("Client not found");
+     return "Client not found";
      
    }).finally(() =>  db.destroy());
  
     }
  catch(err)
  {
-   console.log("error");
+   return "error";
  }
 }
 
@@ -168,23 +178,32 @@ const create_client_keys = async(uuid) => {
 
   let key= generateKey.generateKey();
 
-  return await db.select("id").from("auth_clients")
-                 .where({'uuid': uuid}).first()
-                 .then( res => { console.log(res.id)
-            db("auth_client_keys")
-                .insert({auth_client_id:res.id, key: key})
-                .then(() => console.log("Client key Created"+ " " + key))
-                .catch(function () {
-                  return "Client key not Created";
-                });
-        }).catch(function () {
-            return "Client key Creation failed";
-          }).finally(() =>  db.destroy());
+    return db.transaction(trx => {
+      
+      return trx.select("id").from("auth_clients")
+        .where({'uuid': uuid}).first()
+        .then((res) => {
 
-    }
+          return trx('auth_client_keys').insert({auth_client_id:res.id, key: key});
+        }).catch(err => {
+
+          return err;
+        });
+    })
+    .then((result) => {
+      return (`client key created key: ${key}`);
+
+    })
+    .catch(err => {
+
+      return err;
+    });
+
+
+  }
  catch(err)
  {
-   console.log("error");
+   return "error";
  }
 
 }
@@ -194,65 +213,75 @@ const delete_client_keys = (id) => {
 
   try{
       return db("auth_client_keys")
-      .where({'id': id}).del().then( () => {
-      console.log("client key deleted");
+      .where({'id': id}).del().then( (res) => {
+      return `client key deleted with id ${res}`;
     }).finally( () => {
       db.destroy();
     });
   }
   catch(err)
   {
-    console.log("error");
+    return "error";
   }
 
 }
 
-const update_client_key= (id) => {
+const update_client_key= async(id) => {
   try{
+    
     let key= generateKey.generateKey();
 
-        return db("auth_client_keys")
+    return await db("auth_client_keys")
         .where({'id': id}).update({'key':key}).then( () => {
-        console.log("client key updated" + " " + key);
+        return "client key updated" + " " + key;
+      }).catch(err =>
+      {
+        return "unable to update key";
       }).finally(function () {
         db.destroy();
       });
     }
     catch(err)
     {
-      console.log("error");
+      return "error";
     }
 }
 
-const delete_client= (uuid) => {
+const delete_client= async(uuid) => {
 try{
     return db("auth_clients")
-                 .where({'uuid': uuid}).del().then(function (count) {
-                  console.log("client deleted");
-                }).finally(function () {
-                  db.destroy();
-                });
+              .where({'uuid': uuid}).del().then(function (count) {
+              return "client deleted";
+            }).catch(err =>
+              {
+                return "unable to delete client";
+              }).finally(function () {
+              db.destroy();
+            });
     }
   catch(err)
   {
-    console.log("error");
+    return "error";
   }
 
 }
 
-const block_client_key= (id) => {
+const block_client_key= async(id) => {
   try{
 
-        return db("auth_client_keys")
-        .where({'id': id}).update({'is_blocked': true}).then( () => {
-        console.log("client key blocked");
-      }).finally(function () {
+      return db("auth_client_keys")
+        .where({'id': id}).update({'is_blocked': true}).then( (res) => {
+        return "client key blocked";
+      }).catch(err =>
+        {
+          return "unable to block client key";
+        }).finally(function () {
         db.destroy();
       });
     }
     catch(err)
     {
-      console.log("error");
+     return "error";
     }
 }
 
@@ -261,46 +290,52 @@ const unblock_client_key= (id) => {
   try{
         return db("auth_client_keys")
         .where({'id': id}).update({'is_blocked': false}).then( () => {
-        console.log("client key unblocked");
-      }).finally(function () {
+          return "client key unblocked";
+        }).catch(err =>
+          {
+            return "unable to unblock client key";
+          }).finally(function () {
         db.destroy();
       });
     }
     catch(err)
     {
-      console.log("error");
+      return "error";
     }
 }
 
 
-const block_client= (uuid) => {
+const block_client= async(uuid) => {
   try{
         return db("auth_clients")
         .where({'uuid': uuid}).update({'is_blocked': true}).then( () => {
-        console.log("client blocked");
-      }).finally(function () {
+        return "client blocked";
+      }).catch(err =>
+        {
+          return "unable to block client";
+        }).finally(function () {
         db.destroy();
       });
     }
     catch(err)
     {
-      console.log("error");
+      return "error";
     }
 }
 
 
-const unblock_client= (uuid) => {
+const unblock_client= async(uuid) => {
   try{
         return db("auth_clients")
         .where({'uuid': uuid}).update({'is_blocked': false}).then( () => {
-        console.log("client unblocked");
+        return "client unblocked";
       }).finally(function () {
         db.destroy();
       });
     }
     catch(err)
     {
-      console.log("error");
+      return "error";
     }
 }
 
@@ -311,7 +346,7 @@ const unblock_client= (uuid) => {
   exports.get_client= get_client;
   exports.get_client_keys= get_client_keys;
   exports.delete_client= delete_client;
-  exports.is_autenticate= is_autenticate;
+  exports.is_authenticate= is_authenticate;
   exports.create_client_keys= create_client_keys;
   exports.delete_client_keys= delete_client_keys;
   exports.update_client_key= update_client_key;

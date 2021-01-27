@@ -36,9 +36,25 @@ module.exports = {
       host : process.env.CLIENT_DB_HOST,
       user : process.env.CLIENT_DB_USERNAME,
       password : process.env.CLIENT_DB_PASSWORD,
-      database : process.env.CLIENT_DB_DATABASE
+      database : process.env.CLIENT_DB_DATABASE,
+      charset  : 'utf8'
+    },
+    
+    migrations: {
+      tableName: 'knex_migrations'
     }
   },
+
+  test: {
+    client: "sqlite3",
+    connection: ":memory:",
+    useNullAsDefault: true,
+    migrations: {
+      tableName: 'knex_migrations'
+    }
+
+  },
+  
   migrations: {
     tableName: 'knex_migrations'
   }

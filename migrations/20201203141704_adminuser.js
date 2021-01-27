@@ -1,6 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-// var generateKey = require('../helper');
-
 
 exports.up = function(knex, Promise) {
   
@@ -13,8 +11,8 @@ return knex("auth_clients")
     .then( (res) => {
         knex("auth_client_keys")
             .insert({auth_client_id:res[0], key: generateKey()})
-            .then(() => console.log("data inserted"))
-            .catch(function () {
+            .then((results) => {return "Data inserted"})
+            .catch(() => {
               return "transaction failed, data rolled back";
             });
     }).catch(function () {

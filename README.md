@@ -48,10 +48,10 @@ $ patricia-auth-migrate
 ```bash
   create(name), 
   update_client(uuid, name),
-  get_client(id),
+  get_client(uuid),
   get_client_keys(id),
   delete_client(uuid),
-  is_autenticate(apikey),
+  is_authenticate(apikey),
   create_client_keys(uuid),
   delete_client_keys(id),
   update_client_key(id),
@@ -67,7 +67,7 @@ if type is admin use  create(name, type='admin'),
 ## Avalable Helpers 
 ```bash
   is_admin(uuid),
-  is_autenticate(apikey),
+  is_authenticate(apikey),
 ```
 
 Happy coding!

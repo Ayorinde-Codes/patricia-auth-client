@@ -1,6 +1,6 @@
 {
   "name": "patricia-auth-client",
-  "version": "1.0.2",
+  "version": "0.0.0-semantically-released",
   "description": "A Module for Patricia Technologies for management of client and client key",
   "main": "index.js",
   "bin": {
@@ -8,7 +8,9 @@
     "patricia-auth-init": "./cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "semantic-release": "semantic-release",
+    "commit": "git-cz"
   },
   "keywords": [
     "node",
@@ -27,7 +29,22 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
     "pg": "^8.5.1",
-    "sqlite3": "^5.0.0",
+    "sqlite3": "^4.1.1",
     "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "commitizen": "^4.2.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "jest": "^26.6.3",
+    "semantic-release": "^17.3.7"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ayorinde-Codes/patricia-auth-client.git"
   }
 }
