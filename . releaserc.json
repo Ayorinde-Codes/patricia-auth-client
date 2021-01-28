@@ -1,6 +1,6 @@
 {
   "branches": ["main"],
-  "repositoryUrl": "https://github.com/abdelrahmanahmed/semantic-release-example",
+  "repositoryUrl": "https://github.com/Ayorinde-Codes/patricia-auth-client",
   "debug": "true",
   "plugins": [
     "@semantic-release/commit-analyzer",
