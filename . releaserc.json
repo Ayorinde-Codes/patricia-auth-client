@@ -1,5 +1,7 @@
 {
-  "branches": ["main"],
+  "branches": [
+    {"name": "main", "prerelease": true}
+],
   "repositoryUrl": "https://github.com/Ayorinde-Codes/patricia-auth-client",
   "debug": "true",
   "plugins": [
