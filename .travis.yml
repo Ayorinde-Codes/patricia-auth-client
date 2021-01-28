@@ -6,10 +6,9 @@ notifications:
   email: false
 node_js:
   - '10'
-  - '8'
-  - '7'
-before_script:
-  - npm prune
+  - '9'
+install:
+  - npm install
 script:
   - npm run test
 after_success:
