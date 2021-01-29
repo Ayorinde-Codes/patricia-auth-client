@@ -50,9 +50,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Ayorinde-Codes/patricia-auth-client.git"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://npm.pkg.github.com"
   }
 }
