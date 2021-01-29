@@ -199,7 +199,6 @@ const create_client_keys = async(uuid) => {
       return err;
     });
 
-
   }
  catch(err)
  {
